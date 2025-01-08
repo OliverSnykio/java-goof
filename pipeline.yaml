@@ -1,21 +1,19 @@
 pipeline:
-  name: Java Goof Pipeline
-  identifier: java_goof_pipeline
+  name: Java Goof CI Pipeline
+  identifier: java_goof_ci_pipeline
   projectIdentifier: my_project
   orgIdentifier: my_org
   stages:
     - stage:
-        name: Build Stage
-        identifier: build_stage
+        name: Build and Snyk Stage
+        identifier: build_and_snyk_stage
         type: CI
         spec:
           cloneCodebase: true
           infrastructure:
-            type: KubernetesDirect
+            type: Docker
             spec:
-              connectorRef: my_k8s_connector
-              namespace: default
-              volumes: []
+              connectorRef: my_docker_connector
           execution:
             steps:
               - step:
@@ -29,34 +27,12 @@ pipeline:
                     command: |
                       mvn clean install
               - step:
-                  name: Docker Build and Push
-                  identifier: docker_build_and_push
-                  type: BuildAndPushDockerRegistry
+                  name: Snyk Security Scan
+                  identifier: snyk_scan
+                  type: Run
                   spec:
-                    connectorRef: my_dockerhub_connector
-                    repo: my-docker-repo/java-goof
-                    tags:
-                      - latest
-                    context: ./
-                    dockerfile: ./Dockerfile
-    - stage:
-        name: Deploy Stage
-        identifier: deploy_stage
-        type: CD
-        spec:
-          infrastructure:
-            environmentRef: my_environment
-            infrastructureDefinition:
-              type: KubernetesDirect
-              spec:
-                connectorRef: my_k8s_connector
-                namespace: default
-          execution:
-            steps:
-              - step:
-                  name: Kubernetes Apply
-                  identifier: k8s_apply
-                  type: Apply
-                  spec:
-                    resources:
-                      - /path/to/k8s/deploy.yaml
+                    connectorRef: my_snyk_connector
+                    image: snyk/snyk-cli:latest
+                    shell: Bash
+                    command: |
+                      snyk test
