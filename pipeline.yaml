@@ -1,8 +1,8 @@
 pipeline:
   name: Java Goof CI Pipeline
   identifier: java_goof_ci_pipeline
-  projectIdentifier: my_project
-  orgIdentifier: my_org
+  projectIdentifier: default_project
+  orgIdentifier: default
   stages:
     - stage:
         name: Build and Snyk Stage
